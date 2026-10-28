@@ -1,26 +1,6 @@
 from collections import deque
 
-width = 7
-height = 5
-
-drone_position = (2, 3)
-
-obstacles = {
-    (3, 1),
-    (3, 2),
-    (3, 3)
-}
-
-def is_valid_move(position, width, height, obstacles):
-    x, y = position
-
-    if 0 <= x < width and 0 <= y < height:
-        if position not in obstacles:
-            return True
-    
-    return False
-
-def get_neighbors(position, width, height, obstacles):
+def get_neighbors(position, environment):
     neighbors = []
 
     x, y = position
@@ -33,12 +13,18 @@ def get_neighbors(position, width, height, obstacles):
     moves = [up, down, left, right]
 
     for move in moves:
-        if (is_valid_move(move, width, height, obstacles)):
+        if (environment.is_valid_move(move)):
             neighbors.append(move)
 
     return neighbors
 
-def bfs(start, goal, width, height, obstacles):
+def bfs(start, goal, environment):
+    if not environment.is_valid_move(start):
+        return []
+    
+    if not environment.is_valid_move(goal):
+        return []
+
     queue = deque()
     visited = set()
     came_from = {}
@@ -49,7 +35,6 @@ def bfs(start, goal, width, height, obstacles):
     while queue:
         current = queue.popleft()
         if current == goal:
-            print("Destination found!")
             
             path = []
             position = goal
@@ -64,9 +49,7 @@ def bfs(start, goal, width, height, obstacles):
 
             return path
 
-        print(current)
-
-        neighbors = get_neighbors(current, width, height, obstacles)
+        neighbors = get_neighbors(current, environment)
 
         for neighbor in neighbors:
             if neighbor not in visited:

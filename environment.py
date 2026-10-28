@@ -15,14 +15,3 @@ class Environment:
                 return True
         
         return False
-
-environment = Environment(7, 5)
-
-environment.add_obstacle((3, 1))
-environment.add_obstacle((3, 2))
-environment.add_obstacle((3, 3))
-
-print(environment.is_valid_move((2, 4)))
-print(environment.is_valid_move((3, 3)))
-print(environment.is_valid_move((7, 2)))
-print(environment.is_valid_move((0, 0)))
