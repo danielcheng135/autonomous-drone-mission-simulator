@@ -29,6 +29,10 @@ class MissionController:
             return
 
         if not self.environment.is_valid_move(self.path[1]):
+            self.start_mission(self.goal)
+            return
+
+        if len(self.path) < 2:
             self.state = "FAILED"
             return
 
