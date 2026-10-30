@@ -1,7 +1,7 @@
 import pygame
 from drone import Drone
 from environment import Environment
-from pathfinding import bfs
+from mission_controller import MissionController
 
 def draw_drone(screen, drone, cell_size):
     x, y = drone.get_position()
@@ -189,16 +189,50 @@ def run_simulation():
     environment.add_obstacle((3, 2))
     environment.add_obstacle((3, 3))
 
-    drone = Drone((2, 3))
+    START_POSITION = (2, 3)
+    drone = Drone(START_POSITION)
 
     goal = (5, 4)
 
-    path = bfs(drone.get_position(), goal, environment)
+    mission = MissionController(drone, environment)
+
+    MOVE_DELAY = 500
+    last_move = pygame.time.get_ticks()
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if mission.state == "MOVING":
+                        mission.pause_mission()
+                    elif mission.state == "PAUSED":
+                        mission.resume_mission()
+                        last_move = pygame.time.get_ticks()
+                elif event.key == pygame.K_r:
+                    mission.reset_mission()
+                    drone.move_to(START_POSITION)
+                    last_move = pygame.time.get_ticks()
+                elif event.key == pygame.K_s:
+                    if mission.state == "IDLE":
+                        mission.start_mission(goal)
+                        last_move = pygame.time.get_ticks()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mouse_x, mouse_y = event.pos
+
+                    x_grid = mouse_x // CELL_SIZE
+                    y_grid = mouse_y // CELL_SIZE
+
+                    if environment.is_valid_move((x_grid, y_grid)) and (x_grid, y_grid) != drone.get_position() and (x_grid, y_grid) != goal:
+                        environment.add_obstacle((x_grid, y_grid))
+
+        current_time = pygame.time.get_ticks()
+
+        if mission.state == "MOVING" and current_time - last_move >= MOVE_DELAY:
+            mission.update()
+            last_move = current_time
 
         DARK_GRAY = (30, 30, 30)
         screen.fill(DARK_GRAY)
@@ -220,7 +254,7 @@ def run_simulation():
                     1
                 ) 
 
-        for x, y in path[:-1]:
+        for x, y in mission.path[:-1]:
             x_c = x * CELL_SIZE + CELL_SIZE // 2
             y_c = y * CELL_SIZE + CELL_SIZE // 2
 
