@@ -140,11 +140,7 @@ Both algorithms are checked for valid movement, correct endpoints, and expected 
 
 ## Screenshots
 
-_Add a screenshot of the running simulator here._
-
-```markdown
 ![Autonomous Drone Mission Simulator](screenshots/simulator.png)
-```
 
 ## Future Improvements
 
