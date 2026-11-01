@@ -1,5 +1,7 @@
 # Autonomous Drone Mission Simulator
 
+![Autonomous Drone Mission Simulator](screenshots/simulator.png)
+
 A Python-based, interactive 2D autonomous drone mission simulator featuring BFS and A* search algorithm pathfinding, dynamic obstacle avoidance, mission state management, and real-time performance monitoring.
 
 Built with Python and Pygame to explore autonomous navigation algorithms, modular software architecture, and event-driven simulation.
@@ -137,10 +139,6 @@ The test suite checks:
 - Unreachable destinations
 
 Both algorithms are checked for valid movement, correct endpoints, and expected path lengths.
-
-## Screenshots
-
-![Autonomous Drone Mission Simulator](screenshots/simulator.png)
 
 ## Future Improvements
 
