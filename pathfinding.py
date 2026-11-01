@@ -1,4 +1,5 @@
 from collections import deque
+import heapq
 
 def get_neighbors(position, environment):
     neighbors = []
@@ -18,7 +19,7 @@ def get_neighbors(position, environment):
 
     return neighbors
 
-def bfs(start, goal, environment):
+def bfs(start, goal, environment, metrics=None):
     if not environment.is_valid_move(start):
         return []
     
@@ -29,13 +30,16 @@ def bfs(start, goal, environment):
     visited = set()
     came_from = {}
 
+    explored_count = 0
+
     queue.append(start)
     visited.add(start)
 
     while queue:
         current = queue.popleft()
-        if current == goal:
-            
+        explored_count += 1
+
+        if current == goal:            
             path = []
             position = goal
 
@@ -47,6 +51,9 @@ def bfs(start, goal, environment):
             
             path.reverse()
 
+            if metrics is not None:
+                metrics["nodes_explored"] = explored_count
+
             return path
 
         neighbors = get_neighbors(current, environment)
@@ -56,5 +63,69 @@ def bfs(start, goal, environment):
                 queue.append(neighbor)
                 visited.add(neighbor)
                 came_from[neighbor] = current
-
+    
+    if metrics is not None:
+        metrics["nodes_explored"] = 0
+            
     return []
+
+def astar(start, goal, environment, metrics=None):
+    priority_queue = []
+
+    g_score = {start: 0}
+    came_from = {}
+
+    explored_count = 0
+
+    heapq.heappush(priority_queue, (heuristic(start, goal), start))
+    while priority_queue:
+        f_score, current_position = heapq.heappop(priority_queue)
+
+        # Skip outdated queue entries
+        expected_f_score = (
+            g_score[current_position]
+            + heuristic(current_position, goal)
+        )
+
+        if f_score > expected_f_score:
+            continue
+
+        # Count explored nodes
+        explored_count += 1
+
+        if current_position == goal:
+            path = [goal]
+
+            while current_position != start:
+                path.append(came_from[current_position])
+                current_position = came_from[current_position]
+
+            path.reverse()
+
+            if metrics is not None:
+                metrics["nodes_explored"] = explored_count
+
+            return path
+
+        for neighbor in get_neighbors(current_position, environment):
+            tentative_g_score = g_score[current_position] + 1
+            previous_g_score = g_score.get(neighbor, float("inf"))
+
+            if tentative_g_score < previous_g_score:
+                came_from[neighbor] = current_position
+                g_score[neighbor] = tentative_g_score
+                f_score = tentative_g_score + heuristic(neighbor, goal)
+                heapq.heappush(priority_queue, (f_score, neighbor))
+    
+    if metrics is not None:
+        metrics["nodes_explored"] = 0
+        
+    return []
+
+def heuristic(position, goal):
+    x1, y1 = position
+    x2, y2 = goal
+
+    manhattan_distance = abs(y2 - y1) + abs(x2 - x1)
+
+    return manhattan_distance

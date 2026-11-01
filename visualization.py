@@ -170,15 +170,11 @@ def draw_goal(screen, goal, cell_size, offset_x=0, offset_y=0):
     )
 
 
-def draw_controls(screen):
+def draw_controls(screen, title_font, controls_font):
     # Colors
     PANEL_COLOR = (40, 46, 53)
     TITLE_COLOR = (235, 243, 247)
     LABEL_COLOR = (160, 175, 190)
-
-    # Fonts
-    title_font = pygame.freetype.SysFont("Helvetica Neue", 14, bold=True)
-    controls_font = pygame.freetype.SysFont("Helvetica Neue", 13)
 
     # Rounded background panel
     pygame.draw.rect(
@@ -213,11 +209,12 @@ def draw_controls(screen):
     # Right column
     controls_font.render_to(screen, (255, 425), "S  -  Start", LABEL_COLOR)
     controls_font.render_to(screen, (255, 445), "R  -  Reset", LABEL_COLOR)
+    controls_font.render_to(screen, (255, 465), "A  -  Switch Algorithm", LABEL_COLOR)
 
 def run_simulation():
     pygame.init()
 
-    screen = pygame.display.set_mode((750, 500))
+    screen = pygame.display.set_mode((750, 600))
     pygame.display.set_caption("Autonomous Drone Mission Simulator")
 
     clock = pygame.time.Clock()
@@ -230,11 +227,12 @@ def run_simulation():
 
     environment = Environment(GRID_WIDTH, GRID_HEIGHT)
 
-    environment.add_obstacle((3, 1))
-    environment.add_obstacle((3, 2))
-    environment.add_obstacle((3, 3))
+    environment.add_obstacle((2, 0))
+    environment.add_obstacle((2, 1))
+    environment.add_obstacle((2, 2))
+    environment.add_obstacle((2, 3))
 
-    START_POSITION = (2, 3)
+    START_POSITION = (0, 0)
     drone = Drone(START_POSITION)
 
     goal = (5, 4)
@@ -248,6 +246,7 @@ def run_simulation():
     label_font = pygame.freetype.SysFont("Helvetica Neue", 14)
     value_font = pygame.freetype.SysFont("Helvetica Neue", 18, bold=True)
     coordinate_font = pygame.freetype.SysFont("Helvetica Neue", 12)
+    controls_title_font = pygame.freetype.SysFont("Helvetica Neue", 14, bold=True)
     controls_font = pygame.freetype.SysFont("Helvetica Neue", 13)
 
     GRID_OFFSET_X = 45
@@ -280,6 +279,12 @@ def run_simulation():
                     if mission.state == "IDLE":
                         mission.start_mission(goal)
                         last_move = pygame.time.get_ticks()
+                elif event.key == pygame.K_a:
+                    if mission.state == "IDLE":
+                        if mission.algorithm == "BFS":
+                            mission.algorithm = "A*"
+                        else:
+                            mission.algorithm = "BFS"
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
 
@@ -317,7 +322,7 @@ def run_simulation():
         pygame.draw.rect(
             screen,
             (38, 49, 58),
-            (15, 15, 455, 345),
+            (15, 15, 465, 345),
             border_radius=10
         )
 
@@ -373,7 +378,7 @@ def run_simulation():
         pygame.draw.rect(
             screen,
             (40, 46, 53),
-            (495, 15, 240, 470),
+            (495, 15, 240, 570),
             border_radius=10
         )
 
@@ -392,7 +397,7 @@ def run_simulation():
             
         draw_drone(screen, drone, CELL_SIZE, GRID_OFFSET_X, GRID_OFFSET_Y)
 
-        draw_controls(screen)
+        draw_controls(screen, controls_title_font, controls_font)
 
         title_font.render_to(
             screen,
@@ -465,7 +470,7 @@ def run_simulation():
         value_font.render_to(
             screen,
             (510, 310),
-            "BFS",
+            mission.algorithm,
             (235, 243, 247)
         )
         
@@ -481,6 +486,34 @@ def run_simulation():
             screen,
             (510, 375),
             f"{remaining_steps}",
+            (235, 243, 247)
+        )
+
+        label_font.render_to(
+            screen,
+            (510, 415),
+            "NODES EXPLORED",
+            (160, 175, 190)
+        )
+
+        value_font.render_to(
+            screen,
+            (510, 440),
+            str(mission.nodes_explored),
+            (235, 243, 247)
+        )
+
+        label_font.render_to(
+            screen,
+            (510, 480),
+            "SEARCH TIME",
+            (160, 175, 190)
+        )
+
+        value_font.render_to(
+            screen,
+            (510, 505),
+            f"{mission.search_time_ms:.4f} ms",
             (235, 243, 247)
         )
         
